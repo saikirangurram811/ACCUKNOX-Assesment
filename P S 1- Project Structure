@@ -1,0 +1,12 @@
+wisecow/
+├── app.py
+├── requirements.txt
+├── Dockerfile
+├── k8s/
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── tls-secret.yaml
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+└── README.md
