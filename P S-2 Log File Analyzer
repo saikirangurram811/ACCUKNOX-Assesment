@@ -1,0 +1,66 @@
+import re
+from collections import Counter
+
+LOG_FILE_PATH = "webserver.log"
+
+def parse_log_file(log_file):
+    """Parse the log file and extract relevant information."""
+    pattern = r'(?P<ip>\d+\.\d+\.\d+\.\d+) - - \[(?P<date>.*?)\] "(?P<request>.*?)" (?P<status>\d+)'
+    data = []
+
+    try:
+        with open(log_file, 'r') as file:
+            for line in file:
+                match = re.search(pattern, line)
+                if match:
+                    data.append(match.groupdict())
+    except FileNotFoundError:
+        print(f"Error: Log file '{log_file}' not found.")
+    except Exception as e:
+        print(f"Error reading log file: {e}")
+
+    return data
+
+def generate_report(parsed_data):
+    """Generate a summary report from the parsed data."""
+    status_counter = Counter(entry['status'] for entry in parsed_data)
+    request_counter = Counter(entry['request'] for entry in parsed_data)
+    ip_counter = Counter(entry['ip'] for entry in parsed_data)
+
+    report = {
+        "total_requests": len(parsed_data),
+        "status_counts": status_counter,
+        "most_requested_pages": request_counter.most_common(5),
+        "top_ips": ip_counter.most_common(5),
+    }
+
+    return report
+
+def display_report(report):
+    """Print the summarized report."""
+    print("\n--- Web Server Log Analysis Report ---")
+    print(f"Total Requests: {report['total_requests']}")
+
+    print("\nStatus Code Counts:")
+    for status, count in report['status_counts'].items():
+        print(f"  {status}: {count}")
+
+    print("\nMost Requested Pages:")
+    for request, count in report['most_requested_pages']:
+        print(f"  {request}: {count}")
+
+    print("\nTop IPs with Most Requests:")
+    for ip, count in report['top_ips']:
+        print(f"  {ip}: {count}")
+
+def main():
+    print("Starting log analysis...")
+    parsed_data = parse_log_file(LOG_FILE_PATH)
+    if parsed_data:
+        report = generate_report(parsed_data)
+        display_report(report)
+    else:
+        print("No data available for analysis.")
+
+if __name__ == "__main__":
+    main()
