@@ -1,0 +1,53 @@
+import os
+import logging
+import subprocess
+from datetime import datetime
+
+logging.basicConfig(
+    filename="backup.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+def log_message(message, level="info"):
+    print(message)
+    if level == "info":
+        logging.info(message)
+    elif level == "warning":
+        logging.warning(message)
+    elif level == "error":
+        logging.error(message)
+
+def perform_backup(source_dir, destination):
+    try:
+        if not os.path.exists(source_dir):
+            raise FileNotFoundError(f"Source directory '{source_dir}' does not exist.")
+
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
+        command = [
+            "rsync",
+            "-avz",
+            "--delete",  
+            source_dir,
+            destination
+        ]
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        if result.returncode == 0:
+            log_message(f"Backup successful: {source_dir} -> {destination}")
+        else:
+            log_message(f"Backup failed: {result.stderr}", level="error")
+
+    except Exception as e:
+        log_message(f"An error occurred during backup: {e}", level="error")
+
+def main():
+    source_dir = "/path/to/source"
+    destination = "/path/to/destination"      log_message("Starting backup operation.")
+    perform_backup(source_dir, destination)
+    log_message("Backup operation completed.")
+
+if __name__ == "__main__":
+    main()
