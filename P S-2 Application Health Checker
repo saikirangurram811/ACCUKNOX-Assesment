@@ -1,0 +1,46 @@
+import requests
+import logging
+from datetime import datetime
+
+logging.basicConfig(
+    filename="app_health.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+def log_status(message, level="info"):
+    """Log status to console and file."""
+    print(message)
+    if level == "info":
+        logging.info(message)
+    elif level == "warning":
+        logging.warning(message)
+    elif level == "error":
+        logging.error(message)
+
+def check_application_health(url):
+    """Check the health of the application by its HTTP status."""
+    try:
+        response = requests.get(url, timeout=5)  
+        status_code = response.status_code
+
+        if 200 <= status_code < 300:
+            log_status(f"Application is UP. HTTP Status: {status_code}")
+        else:
+            log_status(f"Application might be DOWN. HTTP Status: {status_code}", level="warning")
+
+    except requests.exceptions.ConnectionError:
+        log_status("Application is DOWN. Connection error.", level="error")
+    except requests.exceptions.Timeout:
+        log_status("Application is DOWN. Request timed out.", level="error")
+    except Exception as e:
+        log_status(f"An unexpected error occurred: {e}", level="error")
+
+def main():
+    application_url = "http://example.com"  
+
+    print(f"\nStarting health check for {application_url} at {datetime.now()}...")
+    check_application_health(application_url)
+
+if __name__ == "__main__":
+    main()
